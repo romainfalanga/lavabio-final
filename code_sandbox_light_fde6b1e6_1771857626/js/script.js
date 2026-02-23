@@ -1,5 +1,5 @@
 // ==========================================
-// PRESSING LA PORTE D'AZUR - JAVASCRIPT
+// LAVABIO - JAVASCRIPT
 // Animations fluides 60fps & Fonctionnalités
 // ==========================================
 
@@ -201,7 +201,7 @@
         document.body.style.animation = 'rainbow 2s infinite';
         
         // Message secret
-        alert('🎉 Bravo ! Vous avez trouvé le code secret du Pressing la Porte d\'Azur ! 🧥✨\n\n-20% sur votre prochaine visite avec le code: KONAMI2024');
+        alert('🎉 Bravo ! Vous avez trouvé le code secret de Lavabio ! 🧥✨\n\n-20% sur votre prochaine visite avec le code: KONAMI2026');
         
         // Réinitialiser après 5 secondes
         setTimeout(() => {
@@ -244,7 +244,7 @@
 
     // === CONSOLE SIGNATURE ===
     console.log(
-        '%c🧥 Pressing la Porte d\'Azur ',
+        '%c🧥 Lavabio ',
         'background: linear-gradient(135deg, #0F172A 0%, #3B82F6 100%); color: white; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 10px;'
     );
     console.log(
