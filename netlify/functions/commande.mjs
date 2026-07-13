@@ -9,6 +9,15 @@ const escapeHtml = (str) =>
     .replace(/"/g, '&quot;');
 
 export default async (req) => {
+  const url = new URL(req.url);
+  if (url.searchParams.get('diag') === '1') {
+    return json({
+      hasResendKey: !!process.env.RESEND_API_KEY,
+      orderEmail: process.env.ORDER_EMAIL || null,
+      hasOrderFrom: !!process.env.ORDER_FROM,
+    }, 200);
+  }
+
   if (req.method !== 'POST') {
     return json({ error: 'method_not_allowed' }, 405);
   }
