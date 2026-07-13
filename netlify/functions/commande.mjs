@@ -9,18 +9,6 @@ const escapeHtml = (str) =>
     .replace(/"/g, '&quot;');
 
 export default async (req) => {
-  // Sonde de diagnostic temporaire (ne révèle jamais la valeur du secret)
-  const url = new URL(req.url);
-  if (url.searchParams.get('diag') === '1') {
-    return json({
-      hasResendKey: !!process.env.RESEND_API_KEY,
-      resendKeyPrefix: process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.slice(0, 3) : null,
-      orderEmail: process.env.ORDER_EMAIL || null,
-      hasOrderFrom: !!process.env.ORDER_FROM,
-      envKeysWithResendOrOrder: Object.keys(process.env).filter((k) => /RESEND|ORDER/i.test(k)),
-    }, 200);
-  }
-
   if (req.method !== 'POST') {
     return json({ error: 'method_not_allowed' }, 405);
   }
