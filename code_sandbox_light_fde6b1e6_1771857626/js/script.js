@@ -158,26 +158,42 @@
         const formatEuro = (value) =>
             value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 
-        // --- Créneaux de livraison (délai d'une semaine minimum) ---
-        function nextSlotDate(targetDow) {
-            const now = new Date();
-            const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            d.setDate(d.getDate() + 7); // délai minimum d'une semaine
-            while (d.getDay() !== targetDow) {
-                d.setDate(d.getDate() + 1);
-            }
-            return d;
-        }
+        // --- Créneaux : mardi (2) et vendredi (5), 18h–20h. On propose les DEUX prochains. ---
+        const SLOT_DAYS = { 2: 'Mardi', 5: 'Vendredi' };
 
         function formatDateFr(d) {
             return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
         }
 
-        const slotDates = { 'Mardi': nextSlotDate(2), 'Vendredi': nextSlotDate(5) };
-        const slotDateMardiEl = document.getElementById('slotDateMardi');
-        const slotDateVendrediEl = document.getElementById('slotDateVendredi');
-        if (slotDateMardiEl) slotDateMardiEl.textContent = formatDateFr(slotDates['Mardi']);
-        if (slotDateVendrediEl) slotDateVendrediEl.textContent = formatDateFr(slotDates['Vendredi']);
+        // Renvoie les `count` prochains créneaux (dates), en ordre chronologique,
+        // en ne gardant que ceux dont le début (18h) est encore à venir.
+        function upcomingSlots(count) {
+            const now = new Date();
+            const base = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const result = [];
+            for (let i = 0; result.length < count && i < 90; i++) {
+                const d = new Date(base);
+                d.setDate(base.getDate() + i);
+                if (SLOT_DAYS[d.getDay()]) {
+                    const start = new Date(d);
+                    start.setHours(18, 0, 0, 0);
+                    if (start > now) result.push(d);
+                }
+            }
+            return result;
+        }
+
+        const nextSlots = upcomingSlots(2);
+        nextSlots.forEach((date, i) => {
+            const dayName = SLOT_DAYS[date.getDay()];
+            const label = dayName + ' ' + formatDateFr(date) + ', de 18h à 20h';
+            const dayEl = document.getElementById('slot' + i + 'Day');
+            const dateEl = document.getElementById('slot' + i + 'Date');
+            const input = document.getElementById('slot' + i + 'Input');
+            if (dayEl) dayEl.textContent = dayName;
+            if (dateEl) dateEl.textContent = formatDateFr(date);
+            if (input) input.value = label;
+        });
 
         // --- Génération des cartes d'articles ---
         let index = 0;
@@ -352,7 +368,7 @@
                 }
 
                 const slotInput = document.querySelector('#slotOptions input[name="slot"]:checked');
-                if (!slotInput) {
+                if (!slotInput || !slotInput.value) {
                     alert('Veuillez choisir un créneau de livraison (mardi ou vendredi).');
                     return;
                 }
@@ -373,8 +389,7 @@
                 const delivery = computeDelivery(subtotal);
                 const total = subtotal + delivery;
 
-                const slotDate = slotDates[slotInput.value];
-                const creneau = slotInput.value + ' ' + formatDateFr(slotDate) + ', de 18h à 20h';
+                const creneau = slotInput.value;
 
                 const data = {
                     nom: nameInput.value.trim(),

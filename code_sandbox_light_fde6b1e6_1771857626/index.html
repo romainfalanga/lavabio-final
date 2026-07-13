@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="css/style.css?v=5">
+    <link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
     <!-- Navigation -->
@@ -451,22 +451,22 @@
                 <h4 class="commande-coord-title">Choisissez votre créneau</h4>
                 <p class="slot-note">
                     <i class="fas fa-calendar-day"></i>
-                    Collecte et livraison le mardi et le vendredi, de 18h à 20h. Premier créneau disponible sous un délai d'une semaine.
+                    Collecte et livraison le mardi et le vendredi, de 18h à 20h. Choisissez l'un des deux prochains créneaux disponibles.
                 </p>
                 <div class="slot-options" id="slotOptions">
                     <label class="slot-option">
-                        <input type="radio" name="slot" value="Mardi">
+                        <input type="radio" name="slot" value="" id="slot0Input">
                         <span class="slot-content">
-                            <span class="slot-day">Mardi</span>
-                            <span class="slot-date" id="slotDateMardi">—</span>
+                            <span class="slot-day" id="slot0Day">—</span>
+                            <span class="slot-date" id="slot0Date">—</span>
                             <span class="slot-time"><i class="far fa-clock"></i> 18h – 20h</span>
                         </span>
                     </label>
                     <label class="slot-option">
-                        <input type="radio" name="slot" value="Vendredi">
+                        <input type="radio" name="slot" value="" id="slot1Input">
                         <span class="slot-content">
-                            <span class="slot-day">Vendredi</span>
-                            <span class="slot-date" id="slotDateVendredi">—</span>
+                            <span class="slot-day" id="slot1Day">—</span>
+                            <span class="slot-date" id="slot1Date">—</span>
                             <span class="slot-time"><i class="far fa-clock"></i> 18h – 20h</span>
                         </span>
                     </label>
@@ -604,6 +604,6 @@
 
     <!-- Back to Top Button -->
     <!-- JavaScript -->
-    <script src="js/script.js?v=5"></script>
+    <script src="js/script.js?v=6"></script>
 </body>
 </html>
