@@ -115,6 +115,211 @@
         }
     });
 
+    // === COMMANDE LIVRAISON / CLICK & COLLECT ===
+    const commandeArticlesEl = document.getElementById('commandeArticles');
+
+    if (commandeArticlesEl) {
+        const PRESSING_EMAIL = 'lavabio.contact@gmail.com';
+
+        // Articles disponibles à la commande (prix fixes uniquement)
+        const ORDER_ARTICLES = {
+            'Vêtements': {
+                icon: 'fa-tshirt',
+                items: [
+                    ['Chemise', 8], ['Chemisier', 12], ['Pantalon', 9], ['Veste', 12],
+                    ['Manteau', 18], ['Parka', 18], ['Robe Simple', 13], ['Robe de Mariée', 50],
+                    ['Doudoune Duvet', 14], ['Imperméable', 14], ['Cravate', 5], ['Écharpe', 7],
+                    ['Carré de Soie', 7], ['Jupe Simple', 7], ['Pyjama', 7], ['Peignoir', 8],
+                    ['Blouse/Tunique', 5], ['Slip', 2.5], ['Tablier', 3]
+                ]
+            },
+            'Ameublement': {
+                icon: 'fa-couch',
+                items: [
+                    ['Couette', 26], ['Couette Plume', 39], ['Couverture', 19], ['Dessus de Lit', 28],
+                    ['Rideaux', 22], ['Housse de Canapé', 39], ['Housse Chaise', 3]
+                ]
+            },
+            'Blanchisserie': {
+                icon: 'fa-bed',
+                items: [
+                    ['Drap', 10], ['Housse de Couette', 13], ["Taie d'Oreiller", 2.5], ['Nappe', 10],
+                    ['Serviette de Bain', 5], ['Serviette de Toilette', 3], ['Serviette de Table', 3],
+                    ['Gant de Toilette', 1.99]
+                ]
+            }
+        };
+
+        // Quantités sélectionnées : nom -> { qty, price }
+        const quantities = {};
+
+        const formatEuro = (value) =>
+            value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+
+        // Génération de la liste des articles
+        Object.keys(ORDER_ARTICLES).forEach((group) => {
+            const { icon, items } = ORDER_ARTICLES[group];
+
+            const title = document.createElement('h4');
+            title.className = 'commande-group-title';
+            title.innerHTML = `<i class="fas ${icon}"></i> ${group}`;
+            commandeArticlesEl.appendChild(title);
+
+            const list = document.createElement('div');
+            list.className = 'article-list';
+
+            items.forEach(([name, price]) => {
+                quantities[name] = { qty: 0, price: price };
+
+                const row = document.createElement('div');
+                row.className = 'article-row';
+                row.innerHTML =
+                    `<span class="article-name">${name}</span>` +
+                    `<span class="article-price">${formatEuro(price)}</span>` +
+                    `<div class="qty-stepper">` +
+                    `<button type="button" class="qty-btn qty-minus" aria-label="Retirer un ${name}">&minus;</button>` +
+                    `<span class="qty-value">0</span>` +
+                    `<button type="button" class="qty-btn qty-plus" aria-label="Ajouter un ${name}">+</button>` +
+                    `</div>`;
+
+                const valueEl = row.querySelector('.qty-value');
+
+                const updateRow = () => {
+                    const q = quantities[name].qty;
+                    valueEl.textContent = q;
+                    row.classList.toggle('selected', q > 0);
+                    updateTotal();
+                };
+
+                row.querySelector('.qty-plus').addEventListener('click', () => {
+                    quantities[name].qty++;
+                    updateRow();
+                });
+                row.querySelector('.qty-minus').addEventListener('click', () => {
+                    if (quantities[name].qty > 0) {
+                        quantities[name].qty--;
+                        updateRow();
+                    }
+                });
+
+                list.appendChild(row);
+            });
+
+            commandeArticlesEl.appendChild(list);
+        });
+
+        // Calcul du total
+        const totalEl = document.getElementById('commandeTotal');
+
+        function computeTotal() {
+            return Object.values(quantities).reduce((sum, item) => sum + item.qty * item.price, 0);
+        }
+
+        function updateTotal() {
+            if (totalEl) totalEl.textContent = formatEuro(computeTotal());
+        }
+
+        // Mode : afficher/masquer l'adresse selon livraison ou click & collect
+        const addressField = document.getElementById('addressField');
+        const modeInputs = document.querySelectorAll('#commandeMode input[name="mode"]');
+
+        function getSelectedMode() {
+            const checked = document.querySelector('#commandeMode input[name="mode"]:checked');
+            return checked ? checked.value : 'Livraison à domicile';
+        }
+
+        function isDelivery() {
+            return getSelectedMode().indexOf('Livraison') !== -1;
+        }
+
+        function updateAddressVisibility() {
+            if (addressField) addressField.style.display = isDelivery() ? '' : 'none';
+        }
+
+        modeInputs.forEach((input) => input.addEventListener('change', updateAddressVisibility));
+        updateAddressVisibility();
+
+        // Envoi de la commande par email (mailto)
+        const submitBtn = document.getElementById('commandeSubmit');
+        const nameInput = document.getElementById('cmdName');
+        const phoneInput = document.getElementById('cmdPhone');
+        const emailInput = document.getElementById('cmdEmail');
+        const addressInput = document.getElementById('cmdAddress');
+        const notesInput = document.getElementById('cmdNotes');
+
+        function markError(input, hasError) {
+            const field = input.closest('.commande-field');
+            if (field) field.classList.toggle('field-error', hasError);
+        }
+
+        if (submitBtn) {
+            submitBtn.addEventListener('click', () => {
+                const total = computeTotal();
+
+                // Au moins un article
+                const selected = Object.keys(quantities).filter((name) => quantities[name].qty > 0);
+                if (selected.length === 0) {
+                    alert('Veuillez sélectionner au moins un article avant de valider votre commande.');
+                    return;
+                }
+
+                // Validation des champs obligatoires
+                let valid = true;
+                const nameOk = nameInput.value.trim() !== '';
+                const phoneOk = phoneInput.value.trim() !== '';
+                const addressOk = !isDelivery() || addressInput.value.trim() !== '';
+
+                markError(nameInput, !nameOk);
+                markError(phoneInput, !phoneOk);
+                markError(addressInput, !addressOk);
+                valid = nameOk && phoneOk && addressOk;
+
+                if (!valid) {
+                    alert('Merci de renseigner votre nom, votre téléphone' +
+                        (isDelivery() ? ' et votre adresse de collecte / livraison.' : '.'));
+                    return;
+                }
+
+                // Construction du récapitulatif
+                const mode = getSelectedMode().replace('&amp;', '&');
+                let body = 'Bonjour,\n\n';
+                body += 'Je souhaite passer une commande via le site Lavabio.\n\n';
+                body += 'MODE : ' + mode + '\n\n';
+                body += 'ARTICLES :\n';
+
+                selected.forEach((name) => {
+                    const item = quantities[name];
+                    body += `- ${name} x${item.qty} : ${formatEuro(item.qty * item.price)}\n`;
+                });
+
+                body += '\nTOTAL ESTIMÉ : ' + formatEuro(total) + '\n';
+                body += '(Paiement à la livraison, en carte ou en espèces)\n\n';
+                body += 'MES COORDONNÉES :\n';
+                body += '- Nom : ' + nameInput.value.trim() + '\n';
+                body += '- Téléphone : ' + phoneInput.value.trim() + '\n';
+                if (emailInput.value.trim() !== '') {
+                    body += '- Email : ' + emailInput.value.trim() + '\n';
+                }
+                if (isDelivery()) {
+                    body += '- Adresse de collecte / livraison : ' + addressInput.value.trim() + '\n';
+                }
+                if (notesInput.value.trim() !== '') {
+                    body += '\nInformations complémentaires :\n' + notesInput.value.trim() + '\n';
+                }
+                body += '\nMerci de me recontacter pour confirmer le créneau.\n';
+
+                const subject = 'Commande ' + mode + ' - ' + nameInput.value.trim() +
+                    ' (' + formatEuro(total) + ')';
+
+                const mailtoLink = 'mailto:' + PRESSING_EMAIL +
+                    '?subject=' + encodeURIComponent(subject) +
+                    '&body=' + encodeURIComponent(body);
+
+                window.location.href = mailtoLink;
+            });
+        }
+    }
+
     // === FORMULAIRE DE CONTACT ===
     const contactForm = document.getElementById('contactForm');
     

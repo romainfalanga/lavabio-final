@@ -37,6 +37,7 @@
                 <li class="nav-item"><a href="#accueil" class="nav-link">Accueil</a></li>
                 <li class="nav-item"><a href="#services" class="nav-link">Services</a></li>
                 <li class="nav-item"><a href="#tarifs" class="nav-link">Tarifs</a></li>
+                <li class="nav-item"><a href="#livraison" class="nav-link">Livraison</a></li>
                 <li class="nav-item"><a href="#apropos" class="nav-link">À propos</a></li>
                 <li class="nav-item"><a href="tel:0651130537" class="nav-link nav-link-phone"><i class="fas fa-phone"></i> 06 51 13 05 37</a></li>
             </ul>
@@ -350,6 +351,103 @@
         </div>
     </section>
 
+    <!-- Livraison Section -->
+    <section class="livraison livraison-with-bg" id="livraison">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Livraison &amp; Click and Collect</h2>
+                <p class="section-subtitle">On vient récupérer vos articles, on les nettoie, et on vous les rapporte propres</p>
+            </div>
+
+            <!-- Les 3 étapes -->
+            <div class="livraison-steps">
+                <div class="livraison-step" data-animate>
+                    <div class="livraison-step-icon">
+                        <i class="fas fa-truck-pickup"></i>
+                    </div>
+                    <h3 class="livraison-step-title">1. Collecte à domicile</h3>
+                    <p class="livraison-step-text">Nous passons récupérer vos vêtements et articles directement chez vous, au créneau qui vous convient.</p>
+                </div>
+                <div class="livraison-step" data-animate>
+                    <div class="livraison-step-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h3 class="livraison-step-title">2. Nettoyage expert</h3>
+                    <p class="livraison-step-text">Vos textiles sont traités dans notre atelier avec le même savoir-faire premium qu'en boutique.</p>
+                </div>
+                <div class="livraison-step" data-animate>
+                    <div class="livraison-step-icon">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <h3 class="livraison-step-title">3. Retour chez vous</h3>
+                    <p class="livraison-step-text">Une fois propres, nous vous rapportons vos articles à domicile, ou vous venez les récupérer en Click &amp; Collect.</p>
+                </div>
+            </div>
+
+            <!-- Formulaire de commande -->
+            <div class="commande-card" data-animate>
+                <h3 class="commande-title">Passez votre commande</h3>
+                <p class="commande-intro">Sélectionnez vos articles : le total à régler se calcule automatiquement. Le paiement s'effectue uniquement à la livraison, en carte ou en espèces — aucun paiement en ligne.</p>
+
+                <!-- Choix du mode -->
+                <div class="commande-mode" id="commandeMode">
+                    <label class="mode-option">
+                        <input type="radio" name="mode" value="Livraison à domicile" checked>
+                        <span class="mode-content"><i class="fas fa-truck"></i> Livraison à domicile</span>
+                    </label>
+                    <label class="mode-option">
+                        <input type="radio" name="mode" value="Click &amp; Collect">
+                        <span class="mode-content"><i class="fas fa-store"></i> Click &amp; Collect</span>
+                    </label>
+                </div>
+
+                <!-- Liste des articles (générée en JS) -->
+                <div class="commande-articles" id="commandeArticles"></div>
+
+                <!-- Total -->
+                <div class="commande-total">
+                    <span class="commande-total-label">Total estimé</span>
+                    <span class="commande-total-amount" id="commandeTotal">0,00 €</span>
+                </div>
+                <p class="commande-payment-note">
+                    <i class="fas fa-info-circle"></i>
+                    Paiement à la livraison, en carte ou en espèces.
+                </p>
+
+                <!-- Coordonnées client -->
+                <div class="commande-fields">
+                    <div class="commande-field">
+                        <label for="cmdName">Nom et prénom <span class="req">*</span></label>
+                        <input type="text" id="cmdName" placeholder="Votre nom" autocomplete="name">
+                    </div>
+                    <div class="commande-field">
+                        <label for="cmdPhone">Téléphone <span class="req">*</span></label>
+                        <input type="tel" id="cmdPhone" placeholder="06 00 00 00 00" autocomplete="tel">
+                    </div>
+                    <div class="commande-field">
+                        <label for="cmdEmail">Email</label>
+                        <input type="email" id="cmdEmail" placeholder="vous@email.com" autocomplete="email">
+                    </div>
+                    <div class="commande-field commande-field-address" id="addressField">
+                        <label for="cmdAddress">Adresse de collecte / livraison <span class="req">*</span></label>
+                        <input type="text" id="cmdAddress" placeholder="N°, rue, code postal, ville" autocomplete="street-address">
+                    </div>
+                    <div class="commande-field commande-field-full">
+                        <label for="cmdNotes">Informations complémentaires</label>
+                        <textarea id="cmdNotes" placeholder="Créneau souhaité, précisions sur les articles…"></textarea>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-primary btn-block" id="commandeSubmit">
+                    <i class="fas fa-paper-plane"></i> Envoyer ma commande
+                </button>
+                <p class="commande-legal">
+                    En validant, votre commande est transmise par email au pressing (lavabio.contact@gmail.com). Nous vous recontactons pour confirmer le créneau et les détails.
+                </p>
+            </div>
+        </div>
+    </section>
+
     <!-- À propos Section -->
     <section class="apropos apropos-with-bg" id="apropos">
         <div class="container">
@@ -406,6 +504,7 @@
                     <ul>
                         <li><a href="#services">Services</a></li>
                         <li><a href="#tarifs">Tarifs</a></li>
+                        <li><a href="#livraison">Livraison</a></li>
                         <li><a href="#apropos">À propos</a></li>
                     </ul>
                 </div>
@@ -425,6 +524,7 @@
                     <ul>
                         <li><i class="fas fa-map-marker-alt"></i> 16 Rue Victor Hugo<br>83270 Saint-Cyr-sur-Mer</li>
                         <li><i class="fas fa-phone"></i> <a href="tel:0651130537">06 51 13 05 37</a></li>
+                        <li><i class="fas fa-envelope"></i> <a href="mailto:lavabio.contact@gmail.com">lavabio.contact@gmail.com</a></li>
                     </ul>
                 </div>
             </div>
