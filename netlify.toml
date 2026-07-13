@@ -7,6 +7,11 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# Fonctions serverless (envoi des commandes par email)
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
 # Headers de sécurité et performance
 [[headers]]
   for = "/*"

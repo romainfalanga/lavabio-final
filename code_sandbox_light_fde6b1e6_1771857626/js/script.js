@@ -328,7 +328,7 @@
             totalEl.textContent = formatEuro(subtotal + delivery);
         }
 
-        // --- Envoi de la commande (Netlify Forms) ---
+        // --- Envoi de la commande (fonction serverless -> email) ---
         const submitBtn = document.getElementById('commandeSubmit');
         const successEl = document.getElementById('commandeSuccess');
         const nameInput = document.getElementById('cmdName');
@@ -336,16 +336,11 @@
         const emailInput = document.getElementById('cmdEmail');
         const addressInput = document.getElementById('cmdAddress');
         const notesInput = document.getElementById('cmdNotes');
+        const websiteInput = document.getElementById('cmdWebsite');
 
         function markError(input, hasError) {
             const field = input.closest('.commande-field');
             if (field) field.classList.toggle('field-error', hasError);
-        }
-
-        function encodeForm(data) {
-            return Object.keys(data)
-                .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(data[k]))
-                .join('&');
         }
 
         if (submitBtn) {
@@ -381,39 +376,35 @@
                 const slotDate = slotDates[slotInput.value];
                 const creneau = slotInput.value + ' ' + formatDateFr(slotDate) + ', de 18h à 20h';
 
-                const articlesText = selected
-                    .map((item) => `${item.name} x${item.qty} (${formatEuro(item.qty * item.price)})`)
-                    .join('; ');
-
-                const totalText = 'Sous-total ' + formatEuro(subtotal) +
-                    ' + Livraison ' + (delivery === 0 ? 'gratuite' : formatEuro(delivery)) +
-                    ' = ' + formatEuro(total);
-
                 const data = {
-                    'form-name': 'commande',
-                    'nom': nameInput.value.trim(),
-                    'telephone': phoneInput.value.trim(),
-                    'email': emailInput.value.trim(),
-                    'adresse': addressInput.value.trim(),
-                    'creneau': creneau,
-                    'articles': articlesText,
-                    'total': totalText,
-                    'notes': notesInput.value.trim(),
-                    'bot-field': ''
+                    nom: nameInput.value.trim(),
+                    telephone: phoneInput.value.trim(),
+                    email: emailInput.value.trim(),
+                    adresse: addressInput.value.trim(),
+                    creneau: creneau,
+                    notes: notesInput.value.trim(),
+                    articles: selected.map((item) => ({
+                        name: item.name,
+                        qty: item.qty,
+                        lineTotal: formatEuro(item.qty * item.price)
+                    })),
+                    subtotal: formatEuro(subtotal),
+                    delivery: delivery === 0 ? 'Gratuite' : formatEuro(delivery),
+                    total: formatEuro(total),
+                    website: websiteInput ? websiteInput.value : ''
                 };
 
                 const originalHTML = submitBtn.innerHTML;
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours…';
 
-                fetch('/', {
+                fetch('/.netlify/functions/commande', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: encodeForm(data)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
                 })
                     .then((response) => {
                         if (!response.ok) throw new Error('Statut ' + response.status);
-                        // Succès : afficher la confirmation
                         if (successEl) {
                             successEl.hidden = false;
                             successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });

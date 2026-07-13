@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="css/style.css?v=4">
+    <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
     <!-- Navigation -->
@@ -388,19 +388,6 @@
                 </div>
             </div>
 
-            <!-- Formulaire caché pour la détection Netlify Forms -->
-            <form name="commande" data-netlify="true" netlify-honeypot="bot-field" hidden>
-                <input type="text" name="nom">
-                <input type="tel" name="telephone">
-                <input type="email" name="email">
-                <input type="text" name="adresse">
-                <input type="text" name="creneau">
-                <input type="text" name="articles">
-                <input type="text" name="total">
-                <textarea name="notes"></textarea>
-                <input name="bot-field">
-            </form>
-
             <!-- Formulaire de commande -->
             <div class="commande-card" data-animate>
                 <div class="commande-head">
@@ -508,6 +495,7 @@
                         <label for="cmdNotes">Informations complémentaires</label>
                         <textarea id="cmdNotes" placeholder="Créneau souhaité, précisions sur les articles…"></textarea>
                     </div>
+                    <input type="text" id="cmdWebsite" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;opacity:0;height:0;width:0;" />
                 </div>
 
                 <button type="button" class="btn btn-primary btn-block" id="commandeSubmit">
@@ -616,6 +604,6 @@
 
     <!-- Back to Top Button -->
     <!-- JavaScript -->
-    <script src="js/script.js?v=4"></script>
+    <script src="js/script.js?v=5"></script>
 </body>
 </html>
