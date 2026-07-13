@@ -115,7 +115,7 @@
         }
     });
 
-    // === COMMANDE LIVRAISON / CLICK & COLLECT ===
+    // === COMMANDE LIVRAISON ===
     const commandeArticlesEl = document.getElementById('commandeArticles');
 
     if (commandeArticlesEl) {
@@ -150,96 +150,155 @@
             }
         };
 
-        // Quantités sélectionnées : nom -> { qty, price }
-        const quantities = {};
+        // État de la sélection : nom -> { qty, price, category, refs }
+        const selection = {};
+        const cards = [];
 
         const formatEuro = (value) =>
             value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 
-        // Génération de la liste des articles
-        Object.keys(ORDER_ARTICLES).forEach((group) => {
-            const { icon, items } = ORDER_ARTICLES[group];
+        // --- Génération des cartes d'articles ---
+        let index = 0;
+        Object.keys(ORDER_ARTICLES).forEach((category) => {
+            const { icon, items } = ORDER_ARTICLES[category];
 
-            const title = document.createElement('h4');
-            title.className = 'commande-group-title';
-            title.innerHTML = `<i class="fas ${icon}"></i> ${group}`;
-            commandeArticlesEl.appendChild(title);
+            const group = document.createElement('div');
+            group.className = 'article-group';
+            group.dataset.category = category;
 
-            const list = document.createElement('div');
-            list.className = 'article-list';
+            const title = document.createElement('h5');
+            title.className = 'article-group-title';
+            title.innerHTML = `<i class="fas ${icon}"></i> ${category}`;
+            group.appendChild(title);
+
+            const grid = document.createElement('div');
+            grid.className = 'article-grid';
 
             items.forEach(([name, price]) => {
-                quantities[name] = { qty: 0, price: price };
+                const id = 'art-' + index++;
+                selection[name] = { qty: 0, price: price, category: category };
 
-                const row = document.createElement('div');
-                row.className = 'article-row';
-                row.innerHTML =
-                    `<span class="article-name">${name}</span>` +
-                    `<span class="article-price">${formatEuro(price)}</span>` +
-                    `<div class="qty-stepper">` +
-                    `<button type="button" class="qty-btn qty-minus" aria-label="Retirer un ${name}">&minus;</button>` +
-                    `<span class="qty-value">0</span>` +
-                    `<button type="button" class="qty-btn qty-plus" aria-label="Ajouter un ${name}">+</button>` +
+                const card = document.createElement('div');
+                card.className = 'article-card';
+                card.dataset.name = name;
+                card.dataset.category = category;
+                card.dataset.search = name.toLowerCase();
+                card.innerHTML =
+                    `<input type="checkbox" id="${id}" class="article-check">` +
+                    `<label for="${id}" class="article-check-label">` +
+                        `<span class="article-check-box"><i class="fas fa-check"></i></span>` +
+                        `<span class="article-check-name">${name}</span>` +
+                    `</label>` +
+                    `<span class="article-card-price">${formatEuro(price)}</span>` +
+                    `<div class="article-card-qty" aria-hidden="true">` +
+                        `<button type="button" class="qty-btn qty-minus" aria-label="Diminuer la quantité de ${name}">&minus;</button>` +
+                        `<span class="qty-value">0</span>` +
+                        `<button type="button" class="qty-btn qty-plus" aria-label="Augmenter la quantité de ${name}">+</button>` +
                     `</div>`;
 
-                const valueEl = row.querySelector('.qty-value');
+                const checkbox = card.querySelector('.article-check');
+                const qtyBox = card.querySelector('.article-card-qty');
+                const qtyValue = card.querySelector('.qty-value');
 
-                const updateRow = () => {
-                    const q = quantities[name].qty;
-                    valueEl.textContent = q;
-                    row.classList.toggle('selected', q > 0);
-                    updateTotal();
+                const render = () => {
+                    const q = selection[name].qty;
+                    qtyValue.textContent = q;
+                    checkbox.checked = q > 0;
+                    card.classList.toggle('selected', q > 0);
+                    qtyBox.setAttribute('aria-hidden', q > 0 ? 'false' : 'true');
+                    updateSummary();
                 };
 
-                row.querySelector('.qty-plus').addEventListener('click', () => {
-                    quantities[name].qty++;
-                    updateRow();
-                });
-                row.querySelector('.qty-minus').addEventListener('click', () => {
-                    if (quantities[name].qty > 0) {
-                        quantities[name].qty--;
-                        updateRow();
-                    }
-                });
+                const setQty = (q) => {
+                    selection[name].qty = Math.max(0, q);
+                    render();
+                };
 
-                list.appendChild(row);
+                checkbox.addEventListener('change', () => {
+                    setQty(checkbox.checked ? Math.max(1, selection[name].qty) : 0);
+                });
+                card.querySelector('.qty-plus').addEventListener('click', () => setQty(selection[name].qty + 1));
+                card.querySelector('.qty-minus').addEventListener('click', () => setQty(selection[name].qty - 1));
+
+                cards.push({ card, name, category });
+                grid.appendChild(card);
             });
 
-            commandeArticlesEl.appendChild(list);
+            group.appendChild(grid);
+            commandeArticlesEl.appendChild(group);
         });
 
-        // Calcul du total
-        const totalEl = document.getElementById('commandeTotal');
+        // --- Filtres par catégorie + recherche ---
+        const filterBtns = document.querySelectorAll('.commande-filter');
+        const searchInput = document.getElementById('commandeSearch');
+        let activeFilter = 'all';
 
-        function computeTotal() {
-            return Object.values(quantities).reduce((sum, item) => sum + item.qty * item.price, 0);
+        function applyFilters() {
+            const term = (searchInput.value || '').trim().toLowerCase();
+            const groups = commandeArticlesEl.querySelectorAll('.article-group');
+
+            cards.forEach(({ card, category, name }) => {
+                const matchCat = activeFilter === 'all' || category === activeFilter;
+                const matchTerm = term === '' || card.dataset.search.indexOf(term) !== -1;
+                card.style.display = (matchCat && matchTerm) ? '' : 'none';
+            });
+
+            // Masquer les groupes vides
+            groups.forEach((group) => {
+                const visible = group.querySelectorAll('.article-card:not([style*="display: none"])').length;
+                group.style.display = visible > 0 ? '' : 'none';
+            });
         }
 
-        function updateTotal() {
+        filterBtns.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach((b) => b.classList.remove('active'));
+                btn.classList.add('active');
+                activeFilter = btn.dataset.filter;
+                applyFilters();
+            });
+        });
+        if (searchInput) searchInput.addEventListener('input', applyFilters);
+
+        // --- Récapitulatif (panier) + total ---
+        const summaryList = document.getElementById('summaryList');
+        const summaryEmpty = document.getElementById('summaryEmpty');
+        const totalEl = document.getElementById('commandeTotal');
+
+        function getSelected() {
+            return Object.keys(selection)
+                .filter((name) => selection[name].qty > 0)
+                .map((name) => ({ name: name, qty: selection[name].qty, price: selection[name].price }));
+        }
+
+        function computeTotal() {
+            return getSelected().reduce((sum, item) => sum + item.qty * item.price, 0);
+        }
+
+        function updateSummary() {
+            const selected = getSelected();
+
+            // Vider les lignes existantes (sauf le message vide)
+            summaryList.querySelectorAll('.summary-item').forEach((el) => el.remove());
+
+            if (selected.length === 0) {
+                summaryEmpty.style.display = '';
+            } else {
+                summaryEmpty.style.display = 'none';
+                selected.forEach((item) => {
+                    const li = document.createElement('li');
+                    li.className = 'summary-item';
+                    li.innerHTML =
+                        `<span class="summary-item-name">${item.name} <span class="summary-item-qty">×${item.qty}</span></span>` +
+                        `<span class="summary-item-price">${formatEuro(item.qty * item.price)}</span>`;
+                    summaryList.appendChild(li);
+                });
+            }
+
             if (totalEl) totalEl.textContent = formatEuro(computeTotal());
         }
 
-        // Mode : afficher/masquer l'adresse selon livraison ou click & collect
-        const addressField = document.getElementById('addressField');
-        const modeInputs = document.querySelectorAll('#commandeMode input[name="mode"]');
-
-        function getSelectedMode() {
-            const checked = document.querySelector('#commandeMode input[name="mode"]:checked');
-            return checked ? checked.value : 'Livraison à domicile';
-        }
-
-        function isDelivery() {
-            return getSelectedMode().indexOf('Livraison') !== -1;
-        }
-
-        function updateAddressVisibility() {
-            if (addressField) addressField.style.display = isDelivery() ? '' : 'none';
-        }
-
-        modeInputs.forEach((input) => input.addEventListener('change', updateAddressVisibility));
-        updateAddressVisibility();
-
-        // Envoi de la commande par email (mailto)
+        // --- Envoi de la commande par email (mailto) ---
         const submitBtn = document.getElementById('commandeSubmit');
         const nameInput = document.getElementById('cmdName');
         const phoneInput = document.getElementById('cmdPhone');
@@ -254,45 +313,32 @@
 
         if (submitBtn) {
             submitBtn.addEventListener('click', () => {
-                const total = computeTotal();
-
-                // Au moins un article
-                const selected = Object.keys(quantities).filter((name) => quantities[name].qty > 0);
+                const selected = getSelected();
                 if (selected.length === 0) {
                     alert('Veuillez sélectionner au moins un article avant de valider votre commande.');
                     return;
                 }
 
-                // Validation des champs obligatoires
-                let valid = true;
                 const nameOk = nameInput.value.trim() !== '';
                 const phoneOk = phoneInput.value.trim() !== '';
-                const addressOk = !isDelivery() || addressInput.value.trim() !== '';
-
+                const addressOk = addressInput.value.trim() !== '';
                 markError(nameInput, !nameOk);
                 markError(phoneInput, !phoneOk);
                 markError(addressInput, !addressOk);
-                valid = nameOk && phoneOk && addressOk;
 
-                if (!valid) {
-                    alert('Merci de renseigner votre nom, votre téléphone' +
-                        (isDelivery() ? ' et votre adresse de collecte / livraison.' : '.'));
+                if (!(nameOk && phoneOk && addressOk)) {
+                    alert('Merci de renseigner votre nom, votre téléphone et votre adresse de collecte et livraison.');
                     return;
                 }
 
-                // Construction du récapitulatif
-                const mode = getSelectedMode().replace('&amp;', '&');
+                const total = computeTotal();
                 let body = 'Bonjour,\n\n';
-                body += 'Je souhaite passer une commande via le site Lavabio.\n\n';
-                body += 'MODE : ' + mode + '\n\n';
+                body += 'Je souhaite passer une commande de livraison via le site Lavabio.\n\n';
                 body += 'ARTICLES :\n';
-
-                selected.forEach((name) => {
-                    const item = quantities[name];
-                    body += `- ${name} x${item.qty} : ${formatEuro(item.qty * item.price)}\n`;
+                selected.forEach((item) => {
+                    body += `- ${item.name} x${item.qty} : ${formatEuro(item.qty * item.price)}\n`;
                 });
-
-                body += '\nTOTAL ESTIMÉ : ' + formatEuro(total) + '\n';
+                body += '\nTOTAL À PAYER : ' + formatEuro(total) + '\n';
                 body += '(Paiement à la livraison, en carte ou en espèces)\n\n';
                 body += 'MES COORDONNÉES :\n';
                 body += '- Nom : ' + nameInput.value.trim() + '\n';
@@ -300,17 +346,13 @@
                 if (emailInput.value.trim() !== '') {
                     body += '- Email : ' + emailInput.value.trim() + '\n';
                 }
-                if (isDelivery()) {
-                    body += '- Adresse de collecte / livraison : ' + addressInput.value.trim() + '\n';
-                }
+                body += '- Adresse de collecte et livraison : ' + addressInput.value.trim() + '\n';
                 if (notesInput.value.trim() !== '') {
                     body += '\nInformations complémentaires :\n' + notesInput.value.trim() + '\n';
                 }
                 body += '\nMerci de me recontacter pour confirmer le créneau.\n';
 
-                const subject = 'Commande ' + mode + ' - ' + nameInput.value.trim() +
-                    ' (' + formatEuro(total) + ')';
-
+                const subject = 'Commande livraison - ' + nameInput.value.trim() + ' (' + formatEuro(total) + ')';
                 const mailtoLink = 'mailto:' + PRESSING_EMAIL +
                     '?subject=' + encodeURIComponent(subject) +
                     '&body=' + encodeURIComponent(body);
@@ -318,6 +360,9 @@
                 window.location.href = mailtoLink;
             });
         }
+
+        // Initialisation
+        updateSummary();
     }
 
     // === FORMULAIRE DE CONTACT ===
