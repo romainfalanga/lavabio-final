@@ -119,7 +119,8 @@
     const commandeArticlesEl = document.getElementById('commandeArticles');
 
     if (commandeArticlesEl) {
-        const PRESSING_EMAIL = 'lavabio.contact@gmail.com';
+        const DELIVERY_FEE = 5;
+        const FREE_THRESHOLD = 29;
 
         // Articles disponibles à la commande (prix fixes uniquement)
         const ORDER_ARTICLES = {
@@ -150,12 +151,33 @@
             }
         };
 
-        // État de la sélection : nom -> { qty, price, category, refs }
+        // État de la sélection : nom -> { qty, price, category }
         const selection = {};
         const cards = [];
 
         const formatEuro = (value) =>
             value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+
+        // --- Créneaux de livraison (délai d'une semaine minimum) ---
+        function nextSlotDate(targetDow) {
+            const now = new Date();
+            const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            d.setDate(d.getDate() + 7); // délai minimum d'une semaine
+            while (d.getDay() !== targetDow) {
+                d.setDate(d.getDate() + 1);
+            }
+            return d;
+        }
+
+        function formatDateFr(d) {
+            return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        const slotDates = { 'Mardi': nextSlotDate(2), 'Vendredi': nextSlotDate(5) };
+        const slotDateMardiEl = document.getElementById('slotDateMardi');
+        const slotDateVendrediEl = document.getElementById('slotDateVendredi');
+        if (slotDateMardiEl) slotDateMardiEl.textContent = formatDateFr(slotDates['Mardi']);
+        if (slotDateVendrediEl) slotDateVendrediEl.textContent = formatDateFr(slotDates['Vendredi']);
 
         // --- Génération des cartes d'articles ---
         let index = 0;
@@ -237,13 +259,12 @@
             const term = (searchInput.value || '').trim().toLowerCase();
             const groups = commandeArticlesEl.querySelectorAll('.article-group');
 
-            cards.forEach(({ card, category, name }) => {
+            cards.forEach(({ card, category }) => {
                 const matchCat = activeFilter === 'all' || category === activeFilter;
                 const matchTerm = term === '' || card.dataset.search.indexOf(term) !== -1;
                 card.style.display = (matchCat && matchTerm) ? '' : 'none';
             });
 
-            // Masquer les groupes vides
             groups.forEach((group) => {
                 const visible = group.querySelectorAll('.article-card:not([style*="display: none"])').length;
                 group.style.display = visible > 0 ? '' : 'none';
@@ -263,6 +284,8 @@
         // --- Récapitulatif (panier) + total ---
         const summaryList = document.getElementById('summaryList');
         const summaryEmpty = document.getElementById('summaryEmpty');
+        const summarySubtotalEl = document.getElementById('summarySubtotal');
+        const summaryDeliveryEl = document.getElementById('summaryDelivery');
         const totalEl = document.getElementById('commandeTotal');
 
         function getSelected() {
@@ -271,14 +294,17 @@
                 .map((name) => ({ name: name, qty: selection[name].qty, price: selection[name].price }));
         }
 
-        function computeTotal() {
+        function computeSubtotal() {
             return getSelected().reduce((sum, item) => sum + item.qty * item.price, 0);
+        }
+
+        function computeDelivery(subtotal) {
+            return (subtotal > 0 && subtotal < FREE_THRESHOLD) ? DELIVERY_FEE : 0;
         }
 
         function updateSummary() {
             const selected = getSelected();
 
-            // Vider les lignes existantes (sauf le message vide)
             summaryList.querySelectorAll('.summary-item').forEach((el) => el.remove());
 
             if (selected.length === 0) {
@@ -295,11 +321,16 @@
                 });
             }
 
-            if (totalEl) totalEl.textContent = formatEuro(computeTotal());
+            const subtotal = computeSubtotal();
+            const delivery = computeDelivery(subtotal);
+            summarySubtotalEl.textContent = formatEuro(subtotal);
+            summaryDeliveryEl.textContent = subtotal === 0 ? '—' : (delivery === 0 ? 'Gratuite' : formatEuro(delivery));
+            totalEl.textContent = formatEuro(subtotal + delivery);
         }
 
-        // --- Envoi de la commande par email (mailto) ---
+        // --- Envoi de la commande (Netlify Forms) ---
         const submitBtn = document.getElementById('commandeSubmit');
+        const successEl = document.getElementById('commandeSuccess');
         const nameInput = document.getElementById('cmdName');
         const phoneInput = document.getElementById('cmdPhone');
         const emailInput = document.getElementById('cmdEmail');
@@ -311,11 +342,23 @@
             if (field) field.classList.toggle('field-error', hasError);
         }
 
+        function encodeForm(data) {
+            return Object.keys(data)
+                .map((k) => encodeURIComponent(k) + '=' + encodeURIComponent(data[k]))
+                .join('&');
+        }
+
         if (submitBtn) {
             submitBtn.addEventListener('click', () => {
                 const selected = getSelected();
                 if (selected.length === 0) {
                     alert('Veuillez sélectionner au moins un article avant de valider votre commande.');
+                    return;
+                }
+
+                const slotInput = document.querySelector('#slotOptions input[name="slot"]:checked');
+                if (!slotInput) {
+                    alert('Veuillez choisir un créneau de livraison (mardi ou vendredi).');
                     return;
                 }
 
@@ -331,33 +374,57 @@
                     return;
                 }
 
-                const total = computeTotal();
-                let body = 'Bonjour,\n\n';
-                body += 'Je souhaite passer une commande de livraison via le site Lavabio.\n\n';
-                body += 'ARTICLES :\n';
-                selected.forEach((item) => {
-                    body += `- ${item.name} x${item.qty} : ${formatEuro(item.qty * item.price)}\n`;
-                });
-                body += '\nTOTAL À PAYER : ' + formatEuro(total) + '\n';
-                body += '(Paiement à la livraison, en carte ou en espèces)\n\n';
-                body += 'MES COORDONNÉES :\n';
-                body += '- Nom : ' + nameInput.value.trim() + '\n';
-                body += '- Téléphone : ' + phoneInput.value.trim() + '\n';
-                if (emailInput.value.trim() !== '') {
-                    body += '- Email : ' + emailInput.value.trim() + '\n';
-                }
-                body += '- Adresse de collecte et livraison : ' + addressInput.value.trim() + '\n';
-                if (notesInput.value.trim() !== '') {
-                    body += '\nInformations complémentaires :\n' + notesInput.value.trim() + '\n';
-                }
-                body += '\nMerci de me recontacter pour confirmer le créneau.\n';
+                const subtotal = computeSubtotal();
+                const delivery = computeDelivery(subtotal);
+                const total = subtotal + delivery;
 
-                const subject = 'Commande livraison - ' + nameInput.value.trim() + ' (' + formatEuro(total) + ')';
-                const mailtoLink = 'mailto:' + PRESSING_EMAIL +
-                    '?subject=' + encodeURIComponent(subject) +
-                    '&body=' + encodeURIComponent(body);
+                const slotDate = slotDates[slotInput.value];
+                const creneau = slotInput.value + ' ' + formatDateFr(slotDate) + ', de 18h à 20h';
 
-                window.location.href = mailtoLink;
+                const articlesText = selected
+                    .map((item) => `${item.name} x${item.qty} (${formatEuro(item.qty * item.price)})`)
+                    .join('; ');
+
+                const totalText = 'Sous-total ' + formatEuro(subtotal) +
+                    ' + Livraison ' + (delivery === 0 ? 'gratuite' : formatEuro(delivery)) +
+                    ' = ' + formatEuro(total);
+
+                const data = {
+                    'form-name': 'commande',
+                    'nom': nameInput.value.trim(),
+                    'telephone': phoneInput.value.trim(),
+                    'email': emailInput.value.trim(),
+                    'adresse': addressInput.value.trim(),
+                    'creneau': creneau,
+                    'articles': articlesText,
+                    'total': totalText,
+                    'notes': notesInput.value.trim(),
+                    'bot-field': ''
+                };
+
+                const originalHTML = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours…';
+
+                fetch('/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: encodeForm(data)
+                })
+                    .then((response) => {
+                        if (!response.ok) throw new Error('Statut ' + response.status);
+                        // Succès : afficher la confirmation
+                        if (successEl) {
+                            successEl.hidden = false;
+                            successEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                        submitBtn.style.display = 'none';
+                    })
+                    .catch(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalHTML;
+                        alert("Une erreur est survenue lors de l'envoi de votre commande. Merci de réessayer, ou de nous appeler au 06 51 13 05 37.");
+                    });
             });
         }
 

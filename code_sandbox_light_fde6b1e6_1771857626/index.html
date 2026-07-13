@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
     
     <!-- Stylesheet -->
-    <link rel="stylesheet" href="css/style.css?v=3">
+    <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
     <!-- Navigation -->
@@ -388,6 +388,19 @@
                 </div>
             </div>
 
+            <!-- Formulaire caché pour la détection Netlify Forms -->
+            <form name="commande" data-netlify="true" netlify-honeypot="bot-field" hidden>
+                <input type="text" name="nom">
+                <input type="tel" name="telephone">
+                <input type="email" name="email">
+                <input type="text" name="adresse">
+                <input type="text" name="creneau">
+                <input type="text" name="articles">
+                <input type="text" name="total">
+                <textarea name="notes"></textarea>
+                <input name="bot-field">
+            </form>
+
             <!-- Formulaire de commande -->
             <div class="commande-card" data-animate>
                 <div class="commande-head">
@@ -422,15 +435,54 @@
                         <ul class="summary-list" id="summaryList">
                             <li class="summary-empty" id="summaryEmpty">Aucun article sélectionné pour le moment.</li>
                         </ul>
+                        <div class="summary-rows">
+                            <div class="summary-row">
+                                <span>Sous-total</span>
+                                <span id="summarySubtotal">0,00 €</span>
+                            </div>
+                            <div class="summary-row">
+                                <span>Livraison</span>
+                                <span id="summaryDelivery">—</span>
+                            </div>
+                        </div>
                         <div class="commande-total">
                             <span class="commande-total-label">Total à payer</span>
                             <span class="commande-total-amount" id="commandeTotal">0,00 €</span>
                         </div>
+                        <p class="commande-delivery-note">
+                            <i class="fas fa-truck"></i>
+                            Livraison 5 € en dessous de 29 €, gratuite à partir de 29 €.
+                        </p>
                         <p class="commande-payment-note">
                             <i class="fas fa-info-circle"></i>
                             Paiement à la livraison, en carte ou en espèces.
                         </p>
                     </aside>
+                </div>
+
+                <!-- Choix du créneau -->
+                <h4 class="commande-coord-title">Choisissez votre créneau</h4>
+                <p class="slot-note">
+                    <i class="fas fa-calendar-day"></i>
+                    Collecte et livraison le mardi et le vendredi, de 18h à 20h. Premier créneau disponible sous un délai d'une semaine.
+                </p>
+                <div class="slot-options" id="slotOptions">
+                    <label class="slot-option">
+                        <input type="radio" name="slot" value="Mardi">
+                        <span class="slot-content">
+                            <span class="slot-day">Mardi</span>
+                            <span class="slot-date" id="slotDateMardi">—</span>
+                            <span class="slot-time"><i class="far fa-clock"></i> 18h – 20h</span>
+                        </span>
+                    </label>
+                    <label class="slot-option">
+                        <input type="radio" name="slot" value="Vendredi">
+                        <span class="slot-content">
+                            <span class="slot-day">Vendredi</span>
+                            <span class="slot-date" id="slotDateVendredi">—</span>
+                            <span class="slot-time"><i class="far fa-clock"></i> 18h – 20h</span>
+                        </span>
+                    </label>
                 </div>
 
                 <!-- Coordonnées client -->
@@ -462,8 +514,15 @@
                     <i class="fas fa-paper-plane"></i> Envoyer ma commande
                 </button>
                 <p class="commande-legal">
-                    En validant, votre commande est transmise par email au pressing (lavabio.contact@gmail.com). Nous vous recontactons pour confirmer le créneau et les détails.
+                    En validant, votre commande est envoyée directement au pressing (lavabio.contact@gmail.com). Nous vous recontactons pour confirmer le créneau et les détails.
                 </p>
+
+                <!-- Message de confirmation -->
+                <div class="commande-success" id="commandeSuccess" hidden>
+                    <i class="fas fa-circle-check"></i>
+                    <h4>Commande envoyée !</h4>
+                    <p>Merci, votre commande a bien été transmise au pressing. Nous vous recontactons rapidement pour confirmer votre créneau.</p>
+                </div>
             </div>
         </div>
     </section>
@@ -557,6 +616,6 @@
 
     <!-- Back to Top Button -->
     <!-- JavaScript -->
-    <script src="js/script.js?v=3"></script>
+    <script src="js/script.js?v=4"></script>
 </body>
 </html>
