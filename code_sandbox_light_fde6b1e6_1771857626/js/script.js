@@ -395,10 +395,9 @@
 
             const subtotal = computeSubtotal();
             const delivery = computeDelivery(subtotal);
-            const fromPrefix = hasFromSelected() ? 'À partir de ' : '';
-            summarySubtotalEl.textContent = (subtotal > 0 ? fromPrefix : '') + formatEuro(subtotal);
+            summarySubtotalEl.textContent = formatEuro(subtotal);
             summaryDeliveryEl.textContent = subtotal === 0 ? '—' : (delivery === 0 ? 'Gratuite' : formatEuro(delivery));
-            totalEl.textContent = (subtotal > 0 ? fromPrefix : '') + formatEuro(subtotal + delivery);
+            totalEl.textContent = formatEuro(subtotal + delivery);
 
             const fromNote = document.getElementById('summaryFromNote');
             if (fromNote) fromNote.style.display = hasFromSelected() ? '' : 'none';
@@ -448,7 +447,6 @@
                 const subtotal = computeSubtotal();
                 const delivery = computeDelivery(subtotal);
                 const total = subtotal + delivery;
-                const fromPrefix = hasFromSelected() ? 'à partir de ' : '';
 
                 const creneau = slotInput.value;
 
@@ -463,9 +461,9 @@
                         const parts = lineParts(item.name);
                         return { name: item.name, qtyText: parts.qtyText, lineTotal: parts.amount };
                     }),
-                    subtotal: fromPrefix + formatEuro(subtotal),
+                    subtotal: formatEuro(subtotal),
                     delivery: delivery === 0 ? 'Gratuite' : formatEuro(delivery),
-                    total: fromPrefix + formatEuro(total),
+                    total: formatEuro(total),
                     website: websiteInput ? websiteInput.value : ''
                 };
 
