@@ -1415,6 +1415,84 @@ section {
     font-size: 0.9rem;
 }
 
+/* Articles à prix variable : "à partir de" et au m² */
+.article-from,
+.article-m2 {
+    flex-wrap: wrap;
+}
+
+.article-from .article-card-price,
+.article-m2 .article-card-price {
+    white-space: normal;
+    font-size: 0.8rem;
+    text-align: right;
+}
+
+/* Le nom peut passer à la ligne (pas de troncature) sur ces cartes */
+.article-from .article-check-name,
+.article-m2 .article-check-name {
+    white-space: normal;
+    overflow: visible;
+}
+
+/* Le contrôle de quantité / m² passe sur sa propre ligne quand sélectionné */
+.article-from.selected .article-card-qty,
+.article-m2.selected .article-card-qty {
+    flex-basis: 100%;
+    justify-content: flex-start;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed var(--bg-light);
+}
+
+/* Saisie du nombre de m² (tapis) */
+.qty-m2-input {
+    width: 3.2rem;
+    padding: 0.25rem 0.4rem;
+    border: 2px solid var(--bg-light);
+    border-radius: var(--radius-md);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--text-dark);
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.qty-m2-input::-webkit-outer-spin-button,
+.qty-m2-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.qty-m2-input:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+}
+
+.qty-unit {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-light);
+}
+
+/* Note "à partir de" dans le panier */
+.commande-from-note {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-light);
+    font-size: 0.82rem;
+    margin-top: var(--spacing-sm);
+}
+
+.commande-from-note i {
+    color: var(--accent-color);
+}
+
 /* Récapitulatif (panier) */
 .commande-summary {
     background: var(--bg-light);

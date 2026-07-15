@@ -122,15 +122,16 @@
         const DELIVERY_FEE = 5;
         const FREE_THRESHOLD = 29;
 
-        // Articles disponibles à la commande (prix fixes uniquement)
+        // Articles disponibles à la commande.
+        // Format : [nom, prix, type?]  — type : 'piece' (défaut) | 'from' (à partir de) | 'm2' (au mètre carré)
         const ORDER_ARTICLES = {
             'Vêtements': {
                 icon: 'fa-tshirt',
                 items: [
                     ['Chemise', 8], ['Chemisier', 12], ['Pantalon', 9], ['Veste', 12],
-                    ['Manteau', 18], ['Parka', 22], ['Robe Simple', 13],
-                    ['Doudoune Duvet', 22], ['Imperméable', 17], ['Cravate', 5], ['Écharpe', 7],
-                    ['Carré de Soie', 7], ['Jupe Simple', 7], ['Pyjama', 7], ['Peignoir', 8],
+                    ['Manteau', 18], ['Parka', 22], ['Robe Simple', 13], ['Robe de Mariée', 110, 'from'],
+                    ['Cuir et Daim', 59, 'from'], ['Doudoune Duvet', 22], ['Imperméable', 17], ['Cravate', 5],
+                    ['Écharpe', 7], ['Carré de Soie', 7], ['Jupe Simple', 7], ['Pyjama', 7], ['Peignoir', 8],
                     ['Blouse/Tunique', 5], ['Slip', 2.5], ['Tablier', 3]
                 ]
             },
@@ -138,7 +139,7 @@
                 icon: 'fa-couch',
                 items: [
                     ['Couette', 29], ['Couette Plume', 45], ['Couverture', 19], ['Dessus de Lit', 28],
-                    ['Rideaux', 22], ['Housse de Canapé', 45], ['Housse Chaise', 4.5]
+                    ['Rideaux', 22], ['Tapis', 22, 'm2'], ['Housse de Canapé', 45], ['Housse Chaise', 4.5]
                 ]
             },
             'Blanchisserie': {
@@ -157,6 +158,24 @@
 
         const formatEuro = (value) =>
             value.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+
+        const formatNum = (value) =>
+            value.toLocaleString('fr-FR', { maximumFractionDigits: 2 });
+
+        // Libellé de quantité et montant d'une ligne, selon le type d'article
+        function lineParts(name) {
+            const s = selection[name];
+            const amountValue = s.qty * s.price;
+            if (s.type === 'm2') {
+                return { qtyText: formatNum(s.qty) + ' m²', amount: formatEuro(amountValue) };
+            }
+            const prefix = s.type === 'from' ? 'à partir de ' : '';
+            return { qtyText: '×' + s.qty, amount: prefix + formatEuro(amountValue) };
+        }
+
+        function hasFromSelected() {
+            return Object.keys(selection).some((n) => selection[n].qty > 0 && selection[n].type === 'from');
+        }
 
         // --- Créneaux : mardi (2) et vendredi (5), 18h–20h. On propose les DEUX prochains. ---
         const SLOT_DAYS = { 2: 'Mardi', 5: 'Vendredi' };
@@ -212,12 +231,38 @@
             const grid = document.createElement('div');
             grid.className = 'article-grid';
 
-            items.forEach(([name, price]) => {
+            items.forEach((item) => {
+                const name = item[0];
+                const price = item[1];
+                const type = item[2] || 'piece'; // 'piece' | 'from' | 'm2'
                 const id = 'art-' + index++;
-                selection[name] = { qty: 0, price: price, category: category };
+                selection[name] = { qty: 0, price: price, category: category, type: type };
+
+                let priceLabel;
+                if (type === 'from') priceLabel = 'À partir de ' + formatEuro(price);
+                else if (type === 'm2') priceLabel = formatEuro(price) + '/m²';
+                else priceLabel = formatEuro(price);
+
+                let qtyControl;
+                if (type === 'm2') {
+                    qtyControl =
+                        `<div class="article-card-qty article-card-m2" aria-hidden="true">` +
+                            `<button type="button" class="qty-btn qty-minus" aria-label="Diminuer les m² de ${name}">&minus;</button>` +
+                            `<input type="number" class="qty-m2-input" min="0" step="0.5" value="1" inputmode="decimal" aria-label="Nombre de m² de ${name}">` +
+                            `<span class="qty-unit">m²</span>` +
+                            `<button type="button" class="qty-btn qty-plus" aria-label="Augmenter les m² de ${name}">+</button>` +
+                        `</div>`;
+                } else {
+                    qtyControl =
+                        `<div class="article-card-qty" aria-hidden="true">` +
+                            `<button type="button" class="qty-btn qty-minus" aria-label="Diminuer la quantité de ${name}">&minus;</button>` +
+                            `<span class="qty-value">0</span>` +
+                            `<button type="button" class="qty-btn qty-plus" aria-label="Augmenter la quantité de ${name}">+</button>` +
+                        `</div>`;
+                }
 
                 const card = document.createElement('div');
-                card.className = 'article-card';
+                card.className = 'article-card' + (type === 'from' ? ' article-from' : '') + (type === 'm2' ? ' article-m2' : '');
                 card.dataset.name = name;
                 card.dataset.category = category;
                 card.dataset.search = name.toLowerCase();
@@ -227,36 +272,46 @@
                         `<span class="article-check-box"><i class="fas fa-check"></i></span>` +
                         `<span class="article-check-name">${name}</span>` +
                     `</label>` +
-                    `<span class="article-card-price">${formatEuro(price)}</span>` +
-                    `<div class="article-card-qty" aria-hidden="true">` +
-                        `<button type="button" class="qty-btn qty-minus" aria-label="Diminuer la quantité de ${name}">&minus;</button>` +
-                        `<span class="qty-value">0</span>` +
-                        `<button type="button" class="qty-btn qty-plus" aria-label="Augmenter la quantité de ${name}">+</button>` +
-                    `</div>`;
+                    `<span class="article-card-price">${priceLabel}</span>` +
+                    qtyControl;
 
                 const checkbox = card.querySelector('.article-check');
                 const qtyBox = card.querySelector('.article-card-qty');
-                const qtyValue = card.querySelector('.qty-value');
 
-                const render = () => {
-                    const q = selection[name].qty;
-                    qtyValue.textContent = q;
-                    checkbox.checked = q > 0;
-                    card.classList.toggle('selected', q > 0);
-                    qtyBox.setAttribute('aria-hidden', q > 0 ? 'false' : 'true');
-                    updateSummary();
-                };
-
-                const setQty = (q) => {
-                    selection[name].qty = Math.max(0, q);
-                    render();
-                };
-
-                checkbox.addEventListener('change', () => {
-                    setQty(checkbox.checked ? Math.max(1, selection[name].qty) : 0);
-                });
-                card.querySelector('.qty-plus').addEventListener('click', () => setQty(selection[name].qty + 1));
-                card.querySelector('.qty-minus').addEventListener('click', () => setQty(selection[name].qty - 1));
+                if (type === 'm2') {
+                    const input = card.querySelector('.qty-m2-input');
+                    const applyM2 = (v) => {
+                        v = (isNaN(v) || v < 0) ? 0 : Math.round(v * 100) / 100;
+                        selection[name].qty = v;
+                        checkbox.checked = v > 0;
+                        card.classList.toggle('selected', v > 0);
+                        qtyBox.setAttribute('aria-hidden', v > 0 ? 'false' : 'true');
+                        if (document.activeElement !== input) input.value = v > 0 ? v : '';
+                        updateSummary();
+                    };
+                    checkbox.addEventListener('change', () => {
+                        applyM2(checkbox.checked ? (selection[name].qty > 0 ? selection[name].qty : 1) : 0);
+                    });
+                    card.querySelector('.qty-plus').addEventListener('click', () => applyM2((selection[name].qty || 0) + 0.5));
+                    card.querySelector('.qty-minus').addEventListener('click', () => applyM2((selection[name].qty || 0) - 0.5));
+                    input.addEventListener('input', () => applyM2(parseFloat(input.value.replace(',', '.'))));
+                } else {
+                    const qtyValue = card.querySelector('.qty-value');
+                    const setQty = (q) => {
+                        const v = q > 0 ? q : 0;
+                        selection[name].qty = v;
+                        qtyValue.textContent = v;
+                        checkbox.checked = v > 0;
+                        card.classList.toggle('selected', v > 0);
+                        qtyBox.setAttribute('aria-hidden', v > 0 ? 'false' : 'true');
+                        updateSummary();
+                    };
+                    checkbox.addEventListener('change', () => {
+                        setQty(checkbox.checked ? Math.max(1, selection[name].qty) : 0);
+                    });
+                    card.querySelector('.qty-plus').addEventListener('click', () => setQty(selection[name].qty + 1));
+                    card.querySelector('.qty-minus').addEventListener('click', () => setQty(selection[name].qty - 1));
+                }
 
                 cards.push({ card, name, category });
                 grid.appendChild(card);
@@ -328,20 +383,25 @@
             } else {
                 summaryEmpty.style.display = 'none';
                 selected.forEach((item) => {
+                    const parts = lineParts(item.name);
                     const li = document.createElement('li');
                     li.className = 'summary-item';
                     li.innerHTML =
-                        `<span class="summary-item-name">${item.name} <span class="summary-item-qty">×${item.qty}</span></span>` +
-                        `<span class="summary-item-price">${formatEuro(item.qty * item.price)}</span>`;
+                        `<span class="summary-item-name">${item.name} <span class="summary-item-qty">${parts.qtyText}</span></span>` +
+                        `<span class="summary-item-price">${parts.amount}</span>`;
                     summaryList.appendChild(li);
                 });
             }
 
             const subtotal = computeSubtotal();
             const delivery = computeDelivery(subtotal);
-            summarySubtotalEl.textContent = formatEuro(subtotal);
+            const fromPrefix = hasFromSelected() ? 'À partir de ' : '';
+            summarySubtotalEl.textContent = (subtotal > 0 ? fromPrefix : '') + formatEuro(subtotal);
             summaryDeliveryEl.textContent = subtotal === 0 ? '—' : (delivery === 0 ? 'Gratuite' : formatEuro(delivery));
-            totalEl.textContent = formatEuro(subtotal + delivery);
+            totalEl.textContent = (subtotal > 0 ? fromPrefix : '') + formatEuro(subtotal + delivery);
+
+            const fromNote = document.getElementById('summaryFromNote');
+            if (fromNote) fromNote.style.display = hasFromSelected() ? '' : 'none';
         }
 
         // --- Envoi de la commande (fonction serverless -> email) ---
@@ -388,6 +448,7 @@
                 const subtotal = computeSubtotal();
                 const delivery = computeDelivery(subtotal);
                 const total = subtotal + delivery;
+                const fromPrefix = hasFromSelected() ? 'à partir de ' : '';
 
                 const creneau = slotInput.value;
 
@@ -398,14 +459,13 @@
                     adresse: addressInput.value.trim(),
                     creneau: creneau,
                     notes: notesInput.value.trim(),
-                    articles: selected.map((item) => ({
-                        name: item.name,
-                        qty: item.qty,
-                        lineTotal: formatEuro(item.qty * item.price)
-                    })),
-                    subtotal: formatEuro(subtotal),
+                    articles: selected.map((item) => {
+                        const parts = lineParts(item.name);
+                        return { name: item.name, qtyText: parts.qtyText, lineTotal: parts.amount };
+                    }),
+                    subtotal: fromPrefix + formatEuro(subtotal),
                     delivery: delivery === 0 ? 'Gratuite' : formatEuro(delivery),
-                    total: formatEuro(total),
+                    total: fromPrefix + formatEuro(total),
                     website: websiteInput ? websiteInput.value : ''
                 };
 

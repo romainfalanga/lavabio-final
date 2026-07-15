@@ -49,8 +49,9 @@ export default async (req) => {
   const from = process.env.ORDER_FROM || 'Commandes Lavabio <onboarding@resend.dev>';
 
   // Corps texte
+  const qtyOf = (a) => (a.qtyText != null ? a.qtyText : 'x' + a.qty);
   const articlesTextLines = articles.map(
-    (a) => `- ${a.name} x${a.qty} : ${a.lineTotal}`
+    (a) => `- ${a.name} ${qtyOf(a)} : ${a.lineTotal}`
   );
   const text = [
     'Nouvelle commande de livraison via le site Lavabio.',
@@ -78,7 +79,7 @@ export default async (req) => {
     .map(
       (a) =>
         `<tr><td style="padding:4px 8px;border-bottom:1px solid #eee;">${escapeHtml(a.name)}</td>` +
-        `<td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:center;">×${escapeHtml(a.qty)}</td>` +
+        `<td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:center;">${escapeHtml(qtyOf(a))}</td>` +
         `<td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;">${escapeHtml(a.lineTotal)}</td></tr>`
     )
     .join('');
