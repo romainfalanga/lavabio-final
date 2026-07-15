@@ -128,8 +128,8 @@
                 icon: 'fa-tshirt',
                 items: [
                     ['Chemise', 8], ['Chemisier', 12], ['Pantalon', 9], ['Veste', 12],
-                    ['Manteau', 18], ['Parka', 18], ['Robe Simple', 13], ['Robe de Mariée', 50],
-                    ['Doudoune Duvet', 14], ['Imperméable', 14], ['Cravate', 5], ['Écharpe', 7],
+                    ['Manteau', 18], ['Parka', 22], ['Robe Simple', 13],
+                    ['Doudoune Duvet', 22], ['Imperméable', 17], ['Cravate', 5], ['Écharpe', 7],
                     ['Carré de Soie', 7], ['Jupe Simple', 7], ['Pyjama', 7], ['Peignoir', 8],
                     ['Blouse/Tunique', 5], ['Slip', 2.5], ['Tablier', 3]
                 ]
@@ -137,14 +137,14 @@
             'Ameublement': {
                 icon: 'fa-couch',
                 items: [
-                    ['Couette', 26], ['Couette Plume', 39], ['Couverture', 19], ['Dessus de Lit', 28],
-                    ['Rideaux', 22], ['Housse de Canapé', 39], ['Housse Chaise', 3]
+                    ['Couette', 29], ['Couette Plume', 45], ['Couverture', 19], ['Dessus de Lit', 28],
+                    ['Rideaux', 22], ['Housse de Canapé', 45], ['Housse Chaise', 4.5]
                 ]
             },
             'Blanchisserie': {
                 icon: 'fa-bed',
                 items: [
-                    ['Drap', 10], ['Housse de Couette', 13], ["Taie d'Oreiller", 2.5], ['Nappe', 10],
+                    ['Drap', 8], ['Housse de Couette', 13], ["Taie d'Oreiller", 2.5], ['Nappe', 15],
                     ['Serviette de Bain', 5], ['Serviette de Toilette', 3], ['Serviette de Table', 3],
                     ['Gant de Toilette', 1.99]
                 ]
