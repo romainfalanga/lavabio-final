@@ -1028,6 +1028,41 @@ section {
     color: var(--primary-color);
 }
 
+/* === Carte de location shampouineuse (specifique, n'affecte pas les autres cartes) === */
+/* La grille location contient une seule carte : on la centre et on lui donne
+   une largeur confortable pour accueillir la description. */
+.tarif-category[data-category="location"] .tarif-grid {
+    grid-template-columns: 1fr;
+    max-width: 440px;
+    margin: 0 auto;
+}
+
+/* La carte passe en colonne pour placer la description sous le prix,
+   sans modifier la disposition horizontale des autres cartes de tarifs. */
+.tarif-card--location {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: left;
+}
+
+/* En-tete : nom a gauche, prix a droite, comme les autres cartes. */
+.tarif-card--location .tarif-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Description sous le prix, discrete et lisible. */
+.tarif-card--location .tarif-description {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--bg-light);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--text-light);
+}
+
 .tarifs-note {
     margin-top: var(--spacing-xl);
     text-align: center;
