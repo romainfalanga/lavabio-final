@@ -2222,8 +2222,9 @@ section {
     display: block;
 }
 
-/* Carte Google Maps circulaire avec contour rouge */
+/* Carte Google Maps circulaire avec contour vert écologique */
 .map-circle {
+    position: relative;
     width: 500px;
     height: 500px;
     margin: 0 auto var(--spacing-md);
@@ -2239,8 +2240,19 @@ section {
     box-shadow: 0 15px 50px rgba(45, 155, 79, 0.5);
 }
 
+/* L'iframe est agrandie et centree : les controles natifs de Google Maps
+   (lien "Agrandir le plan", logo, zoom...) situes sur les bords sortent
+   ainsi hors du cercle visible et sont masques. Notre propre bouton
+   "Ouvrir dans Google Maps" reste seul et bien visible sous la carte. */
 .map-circle iframe {
     display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 140%;
+    height: 140%;
+    border: 0;
 }
 
 .map-address {
@@ -2269,44 +2281,68 @@ section {
 
 /* Bouton clair et accessible pour ouvrir Google Maps */
 .map-button {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
-    max-width: 420px;
     margin: var(--spacing-md) auto 0;
-    padding: 1.125rem 2rem;
-    background: #2D9B4F; /* Vert écologique, cohérent avec le contour de la carte */
+    padding: 1.125rem 2.5rem;
+    background: var(--gradient-green);
     color: var(--white);
-    font-size: 1.25rem;
+    font-family: var(--font-body);
+    font-size: 1.2rem;
     font-weight: 700;
+    letter-spacing: 0.01em;
     text-decoration: none;
     text-align: center;
-    border-radius: var(--radius-lg);
-    box-shadow: 0 8px 24px rgba(45, 155, 79, 0.35);
+    border-radius: var(--radius-full);
+    box-shadow: var(--shadow-green);
     transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Effet de brillance au survol, identique aux boutons du site */
+.map-button::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(-100%);
+    transition: transform var(--transition-base);
+}
+
+.map-button:hover::before {
+    transform: translateX(0);
 }
 
 .map-button i {
-    font-size: 1.4rem;
+    font-size: 1.35rem;
+    position: relative;
+    z-index: 1;
+}
+
+.map-button span {
+    position: relative;
+    z-index: 1;
 }
 
 .map-button:hover,
-.map-button:focus {
-    background: #23803f;
+.map-button:focus-visible {
     transform: translateY(-3px);
-    box-shadow: 0 12px 32px rgba(45, 155, 79, 0.5);
+    box-shadow: 0 16px 40px -8px rgba(45, 155, 79, 0.55);
 }
 
 .map-button:active {
-    transform: translateY(0);
+    transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {
     .map-button {
+        display: flex;
         width: 100%;
-        max-width: none;
         font-size: 1.125rem;
+        padding: 1rem 1.5rem;
     }
 }
 
