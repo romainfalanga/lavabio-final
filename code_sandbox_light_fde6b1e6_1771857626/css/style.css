@@ -2267,6 +2267,49 @@ section {
     color: var(--primary-color);
 }
 
+/* Bouton clair et accessible pour ouvrir Google Maps */
+.map-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    max-width: 420px;
+    margin: var(--spacing-md) auto 0;
+    padding: 1.125rem 2rem;
+    background: #2D9B4F; /* Vert écologique, cohérent avec le contour de la carte */
+    color: var(--white);
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-decoration: none;
+    text-align: center;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 8px 24px rgba(45, 155, 79, 0.35);
+    transition: all var(--transition-base);
+}
+
+.map-button i {
+    font-size: 1.4rem;
+}
+
+.map-button:hover,
+.map-button:focus {
+    background: #23803f;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(45, 155, 79, 0.5);
+}
+
+.map-button:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+    .map-button {
+        width: 100%;
+        max-width: none;
+        font-size: 1.125rem;
+    }
+}
+
 /* === CONTACT === */
 .contact-grid {
     display: grid;
