@@ -370,9 +370,8 @@
             return Math.round(subtotal * 100) / 100;
         }
 
-        function computeDelivery(subtotal) {
-            // Les frais sous le seuil sont confirmés par le pressing.
-            return (subtotal > 0 && subtotal < FREE_THRESHOLD) ? null : 0;
+        function isDeliveryFree(subtotal) {
+            return subtotal >= FREE_THRESHOLD;
         }
 
         function updateSummary() {
@@ -396,10 +395,10 @@
             }
 
             const subtotal = computeSubtotal();
-            const delivery = computeDelivery(subtotal);
+            const deliveryOffered = isDeliveryFree(subtotal);
             summarySubtotalEl.textContent = formatEuro(subtotal);
-            summaryDeliveryEl.textContent = subtotal === 0 ? '—' : (delivery === null ? 'À confirmer' : 'Offerte');
-            totalLabelEl.textContent = delivery === null ? 'Total hors livraison' : 'Total à payer';
+            summaryDeliveryEl.textContent = subtotal === 0 ? '—' : (deliveryOffered ? 'Offerte' : 'Non incluse');
+            totalLabelEl.textContent = 'Total indicatif';
             totalEl.textContent = formatEuro(subtotal);
 
             const fromNote = document.getElementById('summaryFromNote');
@@ -448,8 +447,8 @@
                 }
 
                 const subtotal = computeSubtotal();
-                const delivery = computeDelivery(subtotal);
-                const total = formatEuro(subtotal) + (delivery === null ? ' hors livraison (frais à confirmer)' : '');
+                const deliveryOffered = isDeliveryFree(subtotal);
+                const total = formatEuro(subtotal) + ' (indicatif)';
 
                 const creneau = slotInput.value;
 
@@ -462,10 +461,10 @@
                     notes: notesInput.value.trim(),
                     articles: selected.map((item) => {
                         const parts = lineParts(item.name);
-                        return { name: item.name, qtyText: parts.qtyText, lineTotal: parts.amount };
+                        return { name: item.name, qtyText: parts.qtyText, lineTotal: parts.amount + ' (indicatif)' };
                     }),
-                    subtotal: formatEuro(subtotal),
-                    delivery: delivery === null ? 'À confirmer' : 'Offerte',
+                    subtotal: formatEuro(subtotal) + ' (indicatif)',
+                    delivery: deliveryOffered ? 'Offerte' : 'Non incluse',
                     total: total,
                     website: websiteInput ? websiteInput.value : ''
                 };

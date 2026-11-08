@@ -35,7 +35,7 @@ export default async (req) => {
   const subtotal = (data.subtotal || '').trim();
   const delivery = (data.delivery || '').trim();
   const total = (data.total || '').trim();
-  const totalLabel = delivery === 'À confirmer' ? 'Total hors livraison (frais à confirmer)' : 'Total à payer';
+  const totalLabel = 'Total indicatif';
 
   if (!nom || !telephone || !adresse || articles.length === 0) {
     return json({ error: 'missing_fields' }, 400);
@@ -57,10 +57,12 @@ export default async (req) => {
   const text = [
     'Nouvelle commande de livraison via le site Lavabio.',
     '',
+    'PRIX INDICATIFS, confirmés par le pressing après examen de vos articles.',
+    '',
     'ARTICLES :',
     ...articlesTextLines,
     '',
-    `Sous-total : ${subtotal}`,
+    `Sous-total indicatif : ${subtotal}`,
     `Livraison : ${delivery}`,
     `${totalLabel.toUpperCase()} : ${total}`,
     '(Paiement à la livraison, en carte ou en espèces)',
@@ -91,11 +93,12 @@ export default async (req) => {
       <thead><tr>
         <th style="text-align:left;padding:4px 8px;border-bottom:2px solid #2D9B4F;">Article</th>
         <th style="text-align:center;padding:4px 8px;border-bottom:2px solid #2D9B4F;">Qté</th>
-        <th style="text-align:right;padding:4px 8px;border-bottom:2px solid #2D9B4F;">Montant</th>
+        <th style="text-align:right;padding:4px 8px;border-bottom:2px solid #2D9B4F;">Montant indicatif</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <p style="margin:2px 0;">Sous-total : <strong>${escapeHtml(subtotal)}</strong></p>
+    <p>Prix indicatif, confirmé par le pressing après examen de vos articles.</p>
+    <p style="margin:2px 0;">Sous-total indicatif : <strong>${escapeHtml(subtotal)}</strong></p>
     <p style="margin:2px 0;">Livraison : <strong>${escapeHtml(delivery)}</strong></p>
     <p style="margin:8px 0;font-size:18px;">${escapeHtml(totalLabel)} : <strong style="color:#2D9B4F;">${escapeHtml(total)}</strong><br>
       <span style="font-size:13px;color:#4A7C4E;">(Paiement à la livraison, en carte ou en espèces)</span></p>
