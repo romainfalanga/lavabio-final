@@ -119,8 +119,7 @@
     const commandeArticlesEl = document.getElementById('commandeArticles');
 
     if (commandeArticlesEl) {
-        const DELIVERY_FEE = 5;
-        const FREE_THRESHOLD = 29;
+        const FREE_THRESHOLD = 49;
 
         // Articles disponibles à la commande.
         // Format : [nom, prix, type?]  — type : 'piece' (défaut) | 'from' (à partir de) | 'm2' (au mètre carré)
@@ -358,6 +357,7 @@
         const summarySubtotalEl = document.getElementById('summarySubtotal');
         const summaryDeliveryEl = document.getElementById('summaryDelivery');
         const totalEl = document.getElementById('commandeTotal');
+        const totalLabelEl = document.getElementById('commandeTotalLabel');
 
         function getSelected() {
             return Object.keys(selection)
@@ -366,11 +366,13 @@
         }
 
         function computeSubtotal() {
-            return getSelected().reduce((sum, item) => sum + item.qty * item.price, 0);
+            const subtotal = getSelected().reduce((sum, item) => sum + item.qty * item.price, 0);
+            return Math.round(subtotal * 100) / 100;
         }
 
         function computeDelivery(subtotal) {
-            return (subtotal > 0 && subtotal < FREE_THRESHOLD) ? DELIVERY_FEE : 0;
+            // Les frais sous le seuil sont confirmés par le pressing.
+            return (subtotal > 0 && subtotal < FREE_THRESHOLD) ? null : 0;
         }
 
         function updateSummary() {
@@ -396,8 +398,9 @@
             const subtotal = computeSubtotal();
             const delivery = computeDelivery(subtotal);
             summarySubtotalEl.textContent = formatEuro(subtotal);
-            summaryDeliveryEl.textContent = subtotal === 0 ? '—' : (delivery === 0 ? 'Gratuite' : formatEuro(delivery));
-            totalEl.textContent = formatEuro(subtotal + delivery);
+            summaryDeliveryEl.textContent = subtotal === 0 ? '—' : (delivery === null ? 'À confirmer' : 'Offerte');
+            totalLabelEl.textContent = delivery === null ? 'Total hors livraison' : 'Total à payer';
+            totalEl.textContent = formatEuro(subtotal);
 
             const fromNote = document.getElementById('summaryFromNote');
             if (fromNote) fromNote.style.display = hasFromSelected() ? '' : 'none';
@@ -446,7 +449,7 @@
 
                 const subtotal = computeSubtotal();
                 const delivery = computeDelivery(subtotal);
-                const total = subtotal + delivery;
+                const total = formatEuro(subtotal) + (delivery === null ? ' hors livraison (frais à confirmer)' : '');
 
                 const creneau = slotInput.value;
 
@@ -462,8 +465,8 @@
                         return { name: item.name, qtyText: parts.qtyText, lineTotal: parts.amount };
                     }),
                     subtotal: formatEuro(subtotal),
-                    delivery: delivery === 0 ? 'Gratuite' : formatEuro(delivery),
-                    total: formatEuro(total),
+                    delivery: delivery === null ? 'À confirmer' : 'Offerte',
+                    total: total,
                     website: websiteInput ? websiteInput.value : ''
                 };
 

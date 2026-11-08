@@ -35,6 +35,7 @@ export default async (req) => {
   const subtotal = (data.subtotal || '').trim();
   const delivery = (data.delivery || '').trim();
   const total = (data.total || '').trim();
+  const totalLabel = delivery === 'À confirmer' ? 'Total hors livraison (frais à confirmer)' : 'Total à payer';
 
   if (!nom || !telephone || !adresse || articles.length === 0) {
     return json({ error: 'missing_fields' }, 400);
@@ -61,7 +62,7 @@ export default async (req) => {
     '',
     `Sous-total : ${subtotal}`,
     `Livraison : ${delivery}`,
-    `TOTAL À PAYER : ${total}`,
+    `${totalLabel.toUpperCase()} : ${total}`,
     '(Paiement à la livraison, en carte ou en espèces)',
     '',
     `Créneau choisi : ${creneau}`,
@@ -96,7 +97,7 @@ export default async (req) => {
     </table>
     <p style="margin:2px 0;">Sous-total : <strong>${escapeHtml(subtotal)}</strong></p>
     <p style="margin:2px 0;">Livraison : <strong>${escapeHtml(delivery)}</strong></p>
-    <p style="margin:8px 0;font-size:18px;">Total à payer : <strong style="color:#2D9B4F;">${escapeHtml(total)}</strong><br>
+    <p style="margin:8px 0;font-size:18px;">${escapeHtml(totalLabel)} : <strong style="color:#2D9B4F;">${escapeHtml(total)}</strong><br>
       <span style="font-size:13px;color:#4A7C4E;">(Paiement à la livraison, en carte ou en espèces)</span></p>
     <p style="margin:12px 0;padding:10px;background:#F1F8F4;border-radius:8px;">
       <strong>Créneau choisi :</strong> ${escapeHtml(creneau)}</p>

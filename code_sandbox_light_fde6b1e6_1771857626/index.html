@@ -411,7 +411,7 @@
             <div class="commande-card" data-animate>
                 <div class="commande-head">
                     <h3 class="commande-title">Composez votre commande</h3>
-                    <p class="commande-intro">Cochez les articles que vous souhaitez faire nettoyer et livrer : le total à régler se calcule automatiquement au fur et à mesure.</p>
+                    <p class="commande-intro">Cochez les articles que vous souhaitez faire nettoyer et livrer : le montant de vos articles se calcule automatiquement au fur et à mesure.</p>
                 </div>
 
                 <div class="commande-layout">
@@ -452,7 +452,7 @@
                             </div>
                         </div>
                         <div class="commande-total">
-                            <span class="commande-total-label">Total à payer</span>
+                            <span class="commande-total-label" id="commandeTotalLabel">Total à payer</span>
                             <span class="commande-total-amount" id="commandeTotal">0,00 €</span>
                         </div>
                         <p class="commande-from-note" id="summaryFromNote" style="display:none;">
@@ -461,7 +461,7 @@
                         </p>
                         <p class="commande-delivery-note">
                             <i class="fas fa-truck"></i>
-                            Livraison 5 € en dessous de 29 €, gratuite à partir de 29 €.
+                            Livraison offerte à partir de 49 €. En dessous, frais de livraison à confirmer.
                         </p>
                         <p class="commande-payment-note">
                             <i class="fas fa-info-circle"></i>
@@ -532,7 +532,7 @@
                 <div class="commande-success" id="commandeSuccess" hidden>
                     <i class="fas fa-circle-check"></i>
                     <h4>Commande envoyée !</h4>
-                    <p>Merci, votre commande a bien été transmise au pressing. Nous vous recontactons rapidement pour confirmer votre créneau.</p>
+                    <p>Merci, votre commande a bien été transmise au pressing. Nous vous recontactons rapidement pour confirmer votre créneau et les éventuels frais de livraison.</p>
                 </div>
             </div>
         </div>
@@ -634,6 +634,6 @@
 
     <!-- Back to Top Button -->
     <!-- JavaScript -->
-    <script src="js/script.js?v=9"></script>
+    <script src="js/script.js?v=10"></script>
 </body>
 </html>
